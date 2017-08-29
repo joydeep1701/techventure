@@ -31,11 +31,17 @@ Session(app)
 db = SQL("sqlite:///tv.db")
 @app.route("/")
 def index():
-    return "Lets Nacho! <br> GCETTS Techventure website is up! [not really :P]"
+    return render_template("index.html")
+
+@app.route("/comingsoon")
+def csoon():
+    flash("TLDR:Not Ready","warning")
+    return render_template("comsoon.html")
 
 @app.route("/login",methods=["GET","POST"])
 def login():
     """ Logs User In"""
+
     session.clear() #clear any previous user id
     if request.method == "POST":
         if not request.form.get("roll"):
@@ -55,6 +61,7 @@ def login():
 
             return redirect(url_for("index"))
     else:
+        flash("TLDR:Not Ready","warning")
         return render_template("login.html")
 @app.route("/register",methods=["GET","POST"])
 def register():
