@@ -1,4 +1,5 @@
 from sql import *
+from helpers import *
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 from flask_session import Session
 from passlib.apps import custom_app_context as pwd_context
@@ -28,11 +29,14 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 db = SQL("sqlite:///tv.db")
+@app.route("/")
+def index():
+    return "Lets Nacho! <br> GCETTS Techventure website is up! [not really :P]"
 
+@app.route("/login",methods=["GET","POST"])
 def login():
     """ Logs User In"""
     session.clear() #clear any previous user id
-
     if request.method == "POST":
         if not request.form.get("roll"):
             flash('must provide username','danger')
@@ -41,14 +45,14 @@ def login():
             flash('must provide password','danger')
             return render_template("login.html")
         else:
-            rows = db.execute("""SELECT * FROM 
-            users WHERE UnivRoll = :roll""",roll=html_escape(request.form.get("roll")))
+            rows = db.execute("""SELECT * FROM users WHERE UnivRoll = :roll""",
+            roll=html_escape(request.form.get("roll")))
             if len(rows) != 1 or not pwd_context.verify(request.form.get("password"), rows[0]["Password"]):
                 flash('Invalid password', 'danger')
                 return render_template("login.html")
             session["uroll"] = rows[0]["UnivRoll"]
             session["name"] = rows[0]["Name"]
-            session["lastproblem"] = "None"
+
             return redirect(url_for("index"))
     else:
         return render_template("login.html")
