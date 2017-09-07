@@ -434,11 +434,7 @@ header.masthead {
   .team-member p {
     margin-top: 0; }
 
-section#contact {
-  background-color: #222222;
-  background-image: url("../img/map-image.png");
-  background-repeat: no-repeat;
-  background-position: center; }
+
   section#contact .section-heading {
     color: white; }
   section#contact .form-group {
