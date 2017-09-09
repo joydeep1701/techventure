@@ -1,0 +1,32 @@
+{% extends 'layout.html' %}
+{% load widget_tweaks %}
+{% block title %}Login{% endblock %}
+{% block main %}
+<div class="col-sm-4"></div>
+<div class="col-sm-4">
+  <h2>Login</h2>
+  <hr>
+  <form class="" method="post">
+    {% csrf_token %}
+    {% for hidden in form.hidden_fields %}
+      {{ hidden }}
+    {% endfor %}
+    {% for field in form.visible_fields %}
+      {% if field.errors %}
+        <div class="form-group has-error">
+      {% else %}
+        <div class="form-group">
+      {% endif %}
+        <label for="{{ field.id_for_labels }}">{{ field.label }}</label>
+        {{ field|add_class:'form-control' }}
+        {% for error in field.errors %}
+          <span class="help-block">{{error}}</span>
+        {% endfor %}
+      </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-success">Login</button>
+  </form>
+  <br><p>Not a User? <a href="{% url 'signup' %}">Register Here</a></p>
+  </div>
+<div class="col-sm-4"></div>
+{% endblock %}

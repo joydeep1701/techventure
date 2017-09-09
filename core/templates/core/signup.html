@@ -1,0 +1,30 @@
+{% extends 'layout.html' %}
+{% load widget_tweaks %}
+{% block title %}Register{% endblock %}
+{% block main %}
+<div class="col-sm-6"></div>
+<div class="col-sm-6">
+    <h2>Signup</h2>
+    <form class="" method="post">
+      {% csrf_token %}
+      {% for hidden in form.hidden_fields %}
+        {{ hidden }}
+      {% endfor %}
+      {% for field in form.visible_fields %}
+        {% if field.errors %}
+        <div class="form-group has-error">
+        {% else %}
+        <div class="form-group">
+        {% endif %}
+          <label for="{{ field.id_for_labels }}">{{ field.label }}</label>
+          {{ field|add_class:'form-control' }}
+          {% for error in field.errors %}
+            <span class="help-block">{{error}}</span>
+            <script>toastr["error"]("{{error}}", "Error")</script>
+          {% endfor %}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-success">Sign Up</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block main %}
+  <h2>Welcome, {{request.session.firstname}}</h2>
+  <hr>
+  <p>Actually this is a boring dashboard, but you can verify that you are logged in.</p>
+  <p>Grab some popcorn, These features are cumming soon</p>
+  <ul>
+    <li>
+      Calender / Scheduler
+    </li>
+    <li>
+      Quora style Q&A
+    </li>
+    <li>
+      Medium style blog
+    </li>
+    <li>
+      Some More Holy shit Functionality
+    </li>
+  </ul>
+
+{% endblock %}
