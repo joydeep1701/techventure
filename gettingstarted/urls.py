@@ -11,5 +11,6 @@ import landingpage.views
 urlpatterns = [
     url(r'^$', landingpage.views.index, name='index'),
     url(r'^accounts/',include('core.urls')),
+    url(r'^calender/',include('calender.urls')),
     url(r'^admin/', include(admin.site.urls)),
 ]

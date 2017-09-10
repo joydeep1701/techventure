@@ -1,0 +1,176 @@
+{% extends 'layout.html' %}
+{% block title %}
+Calender-Monthly View
+{%  endblock %}
+
+{% block main %}
+<div class="col-sm-12">
+  <div class="row">
+      <h2 id="calender_title">Calender</h2>
+  </div>
+
+  <div class="row" style="text-align: center;">
+    <table class="table">
+      <thead id="calender_head"></thead>
+      <tbody id="calender_body" style="text-align:middle;"></tbody>
+    </table>
+  </div>
+
+  <div class="row">
+    <ul class="pager">
+       <li class="previous"><a href="#">Previous</a></li>
+       <li class=""></li>
+       <li class="next"><a href="#">Next</a></li>
+     </ul>
+  </div>
+</div>
+
+<script type="text/javascript">
+
+  var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  var monthlyEvents = "";
+  var daywiseTotalEvents = []
+
+  function render_calender(year,cmonth) {
+    cmonth = parseInt(cmonth) - 1
+    adjheaders(); // Adjust the headers
+
+    var innerhtml = "<tr>" // Padding for the last month
+
+    var totalFeb = ""; // Stores Total days in FEB
+    if ((year % 100 !== 0) && (year % 4 === 0) || (year % 400 === 0))
+      totalFeb = 29;
+    else
+      totalFeb = 28;
+    var totalDays = ["31", "" + totalFeb + "", "31", "30", "31", "30", "31", "31", "30", "31", "30", "31"];
+
+    var adjmonth = parseInt(cmonth) + 1; // Adjusts the current month by 1
+    var firstMonthDay = new Date(adjmonth + ' 1 ,' + year); // First Day of Month
+    var firstWeekDay = firstMonthDay.getDay(); // Week day equiv of First Day of Month
+
+    var temp = parseInt(firstWeekDay);
+    var lastmonthtotal = totalDays[(cmonth-1) < 0?(cmonth-1 + 12 ):(cmonth-1)]
+
+    // Adjust padding for the previous month
+    while(temp-- > 0)
+      innerhtml += "<td></td>"
+
+    var i = firstWeekDay
+    var currentMonthTotal = totalDays[cmonth]
+    var day = 1
+
+    while (day <= currentMonthTotal) {
+      if(i % 7 == 0 )
+        innerhtml += "</tr><tr>"
+      innerhtml += "<td onclick=\"showEvents("+day+","+cmonth+","+year+")\"><h4>"+day+"</h4>"
+      if(!isNaN(daywiseTotalEvents[day]))
+        innerhtml += "<span class=\"badge\">"+daywiseTotalEvents[day]+"</span>"
+      innerhtml += "</td>"
+      i++;
+      day++;
+    }
+    innerhtml += "</tr>"
+
+    document.getElementById('calender_body').innerHTML = innerhtml;
+    document.getElementById('calender_title').innerHTML = "Calender: "+monthNames[cmonth]+", "+year
+
+  }
+
+  function hide_modal(){
+    document.getElementById('modal_body').innerHTML = ""
+    $('#message').modal('hide');
+  }
+
+
+  function render_month(year,month) {
+    if(month < 10)
+      month = "0"+month
+    $('#message').modal();
+    document.getElementById('modal_head').innerHTML = "<h3>Loading: "+ monthNames[parseInt(month)-1] +", "+year
+    document.getElementById('modal_body').innerHTML = loaderHTML
+    var xh = new XMLHttpRequest();
+    xh.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+        monthlyEvents = JSON.parse(xh.responseText);
+        distributeEvents();
+        render_calender(year,month);
+        setTimeout(hide_modal,1000);
+      }
+      else if(this.status == 500){
+        document.getElementById('modal_body').innerHTML = "Server Error, Take a Screen-Shot & Ping Joydeep"
+      }
+    };
+    xh.open("GET","/calender/getEventsByMonth?month="+year+"-"+month)
+    xh.send()
+  }
+
+  function distributeEvents(){
+    for(var i = 0; i < monthlyEvents.length;i++){
+      date = parseInt(monthlyEvents[i].start_date.split("-")[2])
+      if(isNaN(daywiseTotalEvents[date]))
+        daywiseTotalEvents[date] = 0
+      daywiseTotalEvents[date] += 1
+    }
+  }
+
+  function showEvents(day,month,year) {
+    $('#message').modal();
+    if(++month < 10)
+      month = "0"+month
+    if(day < 10)
+      day = "0"+day
+    document.getElementById('modal_head').innerHTML = "<h3>Events For: "+day+", "+monthNames[parseInt(month)-1]+"</h3>"
+    var innerhtml = "<div class=\"panel-group\" id=\"EventsAccordion\">"
+    for(var i = 0; i < monthlyEvents.length;i++){
+      temp_day = parseInt(monthlyEvents[i].start_date.split("-")[2])
+      if(parseInt(temp_day) == parseInt(day)){
+        innerhtml += "<div class=\"panel panel-default\">"
+        innerhtml +=  "<div class=\"list-group-item\">"
+        //innerhtml +=    "<h4 class=\"panel-title\">"
+        innerhtml +=      "<a data-toggle=\"collapse\" data-parent=\"#EventsAccordion\" href=\"#collapse"+i+"\">"+monthlyEvents[i].event_name+"   </a>"
+        innerhtml +=       "<span class=\"badge\">"+monthlyEvents[i].event_level+"</span>"
+        //innerhtml +=    "</h4>"
+        innerhtml +=  "</div>"
+        innerhtml +=  "<div id=\"collapse"+i+"\" class=\"panel-collapse collapse\">"
+        innerhtml +=    "<div class=\"panel-body\">"
+        innerhtml +=    "<p><b>Time: </b>"+monthlyEvents[i].start_time+"</p>"
+        innerhtml +=    "<p><b>At: </b>"+monthlyEvents[i].location+"</p>"
+        innerhtml +=    "<p><b>Description: </b>"+monthlyEvents[i].description+"</p>"
+        innerhtml +=    "<p><b>Updated by:</b><span class=\"label label-info\">"+monthlyEvents[i].creator_id+"</span></p>"
+        innerhtml +=    "<div class=\"modal-footer\"><button class=\"btn btn-warning\" onclick=\"editEvent('"+monthlyEvents[i].event_id+"')\">Edit</button></div>"
+        innerhtml +=    "</div>"
+        innerhtml +=  "</div>"
+        innerhtml +="</div>"
+      }
+    }
+    innerhtml += "</div>"
+    document.getElementById('modal_body').innerHTML = innerhtml
+    innerhtml = "<button class=\"btn btn-success\" onclick=\"addEvent('"+day+"','"+month+"','"+year+"')\">Add New Event</button>"
+    temp = document.getElementById('modal_footer').innerHTML
+    document.getElementById('modal_footer').innerHTML = innerhtml + temp
+  }
+  function addEvent(day,month,year) {
+    toastr["error"]("Thanks for your interest, but this feature is cumming soon- Joydeep", "Ouch!")
+  }
+  function editEvent(eventID){
+    toastr["error"]("Thanks for your interest, but this feature is cumming soon- Joydeep", "Ouch!")
+  }
+  function adjheaders() {
+    var innerhtml = "";
+    if ($(window).width() < 650)
+        innerhtml += "<th>Sun</th> <th>Mon</th> <th>Tues</th> <th>Wed</th> <th>Thur</th> <th>Fri</th> <th>Sat</th>";
+     else
+        innerhtml += "<th>Sunday</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th><th>Saturday</th>";
+    document.getElementById('calender_head').innerHTML = innerhtml;
+  }
+  $(window).resize(function() {
+    adjheaders();
+  });
+  document.onreadystatechange = function () {
+    if (document.readyState === "complete") {
+      render_month(2017,09)
+    }
+  }
+</script>
+{% endblock %}

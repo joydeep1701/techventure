@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/yeti/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="/static/loader/loader.css" rel="stylesheet"/>
   <link rel="stylesheet" href="/static/toastr/toastr.css" rel="stylesheet"/>
   <script src="/static/toastr/toastr.min.js"></script>
   <title>{% block title %}{% endblock %} | GCETTS Techventure</title>
@@ -31,6 +32,9 @@
         "hideMethod": "slideUp"
       }
   </script>
+  <script>
+    var loaderHTML = "<div class=\"spinner\"><div class=\"bounce1\"></div><div class=\"bounce2\"></div><div class=\"bounce3\"></div></div>"
+  </script>
 
 </head>
 
@@ -50,6 +54,7 @@
         {% if request.session.username %}
         <ul class="nav navbar-nav">
           <li><a href="{% url 'cusoon' %}">Poll</a></li>
+          <li><a href="{% url 'calender_index' %}">Calender</a></li>
           <li><a href="{% url 'cusoon' %}">Blog</a></li>
           <li><a href="{% url 'cusoon' %}">QA</a></li>
         </ul>
@@ -76,7 +81,6 @@
     </div>
   </nav>
   <div class="container">
-
     {% if messages %}
       {% for message in messages %}
         <script>toastr["{{ message.tags}}"]("", "{{  message }}")</script>
@@ -98,7 +102,7 @@
           <div class="modal-body" id="modal_body">
             <p>GCETTS</p>
           </div>
-          <div class="modal-footer">
+          <div class="modal-footer" id="modal_footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
           </div>
         </div>
