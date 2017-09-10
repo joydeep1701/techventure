@@ -3,7 +3,7 @@ from django.utils import timezone
 
 
 class Calender(models.Model):    
-    creator_id = models.CharField(max_length=40, default="Admin")
+    creator_name = models.CharField(max_length=40, default="Admin")
     event_level = models.CharField(max_length=10, default="General")
     event_name = models.CharField(max_length=200)
     location = models.CharField(max_length=200)
