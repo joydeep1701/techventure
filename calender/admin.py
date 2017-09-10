@@ -1,4 +1,4 @@
 from django.contrib import admin
-from .models import Calender
+from .models import CalenderEvent
 
-admin.site.register(Calender)
+admin.site.register(CalenderEvent)
