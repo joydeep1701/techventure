@@ -2,8 +2,7 @@ from django.db import models
 from django.utils import timezone
 
 
-class Calender(models.Model):
-    event_id = models.AutoField(primary_key=True)
+class Calender(models.Model):    
     creator_id = models.CharField(max_length=40, default="Admin")
     event_level = models.CharField(max_length=10, default="General")
     event_name = models.CharField(max_length=200)
