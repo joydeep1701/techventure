@@ -53,7 +53,7 @@ def authorize(request):
 			messages.error(request, "The username and password were incorrect.")
 	else:
 		form = LoginForm()
-	if request.session['username']:
+	if 'username' in request.session:
 	    messages.error(request, "Are you a human?")
 	    return redirect('dash')
 	return render(request,'core/login.html', {'form':form})
