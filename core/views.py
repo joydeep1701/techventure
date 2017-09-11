@@ -38,7 +38,7 @@ def authorize(request):
 				request.session['firstname'] = user.first_name
 				request.session['username'] = user.username
 				messages.success(request, "Welcome "+user.first_name)
-				if request.GET['next']:
+				if 'next' in request.GET:
 				    return redirect(request.GET['next'])
 				return redirect('dash')
 				#return render(request, "core/dash.html")
