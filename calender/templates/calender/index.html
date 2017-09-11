@@ -147,8 +147,7 @@ Calender-Monthly View
     innerhtml += "</div>"
     document.getElementById('modal_body').innerHTML = innerhtml
     innerhtml = "<button class=\"btn btn-success\" onclick=\"addEvent('"+day+"','"+month+"','"+year+"')\">Add New Event</button>"
-    temp = document.getElementById('modal_footer').innerHTML
-    document.getElementById('modal_footer').innerHTML = innerhtml + temp
+    document.getElementById('modal_footer').innerHTML = innerhtml;
   }
   function addEvent(day,month,year) {
     toastr["error"]("Thanks for your interest, but this feature is cumming soon- Joydeep", "Ouch!")
