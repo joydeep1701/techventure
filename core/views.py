@@ -25,6 +25,7 @@ def signup(request):
 	else:
 		form = SignUpForm()
 	return render(request, 'core/signup.html', {'form':form})
+	
 def authorize(request):
 	if request.method == "POST":
 		username = request.POST['username']
@@ -37,6 +38,8 @@ def authorize(request):
 				request.session['firstname'] = user.first_name
 				request.session['username'] = user.username
 				messages.success(request, "Welcome "+user.first_name)
+				if request.GET['next']:
+				    return redirect(request.GET['next'])
 				return redirect('dash')
 				#return render(request, "core/dash.html")
 			else:
@@ -50,4 +53,7 @@ def authorize(request):
 			messages.error(request, "The username and password were incorrect.")
 	else:
 		form = LoginForm()
+	if request.session['username']:
+	    messages.error(request, "Are you a human?")
+	    return redirect('dash')
 	return render(request,'core/login.html', {'form':form})
