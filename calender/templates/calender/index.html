@@ -223,6 +223,7 @@ Calender-Monthly View
   }
   function rerender(){
     //console.log("rerender callled");
+    daywiseTotalEvents = []
     render_month(parseInt(lastaddmonth.split("-")[0]),parseInt(lastaddmonth.split("-")[1]))
   }
   $(window).resize(function() {
