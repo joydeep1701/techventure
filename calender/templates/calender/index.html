@@ -1,10 +1,16 @@
 {% extends 'layout.html' %}
+{% load widget_tweaks %}
 {% block title %}
 Calender-Monthly View
 {%  endblock %}
 
 {% block main %}
 <div class="col-sm-12">
+  {% csrf_token %}
+  <form class="form" action="" method="post" id="addnew">
+    <fieldset>
+    </fieldset>
+  </form>
   <div class="row">
       <h2 id="calender_title">Calender</h2>
   </div>
@@ -24,6 +30,44 @@ Calender-Monthly View
      </ul>
   </div>
 </div>
+<!-- Modal -->
+    <div id="addnewModal" class="modal fade" role="dialog" style="overflow-y:scroll;">
+      <div class="modal-dialog modal-lg">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <form class="form" action="" method="post" id="addnewEventForm">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title" id="addnewModal_title"></h4>
+              </div>
+              <div class="modal-body">
+                {% csrf_token %}
+                {% for hidden in form.hidden_fields %}
+                  {{ hidden }}
+                {% endfor %}
+                {% for field in form.visible_fields %}
+                  {% if field.errors %}
+                  <div class="form-group has-error">
+                  {% else %}
+                  <div class="form-group">
+                  {% endif %}
+                    <label for="{{ field.id_for_labels }}">{{ field.label }}</label>
+                    {{ field|add_class:'form-control' }}
+                    {% for error in field.errors %}
+                      <span class="help-block">{{error}}</span>
+                      <script>toastr["error"]("{{error}}", "Error")</script>
+                    {% endfor %}
+                  </div>
+                {% endfor %}
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-success">Add</button>
+              </div>
+            </form>
+        </div>
+      </div>
+    </div>
+    <!-- End of Modal -->
 
 <script type="text/javascript">
 
@@ -31,6 +75,7 @@ Calender-Monthly View
   var dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   var monthlyEvents = "";
   var daywiseTotalEvents = []
+  var lastaddmonth = ""
 
   function render_calender(year,cmonth) {
     cmonth = parseInt(cmonth) - 1
@@ -146,13 +191,24 @@ Calender-Monthly View
         innerhtml +="</div>"
       }
     }
+    if(incheck == 0)
+      innerhtml += "<p>No Events for today, create some new</p>"
     innerhtml += "</div>"
     document.getElementById('modal_body').innerHTML = innerhtml
     innerhtml = "<button class=\"btn btn-success\" onclick=\"addEvent('"+day+"','"+month+"','"+year+"')\">Add New Event</button>"
     document.getElementById('modal_footer').innerHTML = innerhtml;
   }
   function addEvent(day,month,year) {
-    toastr["error"]("Thanks for your interest, but this feature is cumming soon- Joydeep", "Ouch!")
+    //toastr["error"]("Thanks for your interest, but this feature is cumming soon- Joydeep", "Ouch!")
+    document.getElementById('modal_body').innerHTML = ""
+    document.getElementById('modal_footer').innerHTML = ""
+    hide_modal();
+    document.getElementById('addnewModal_title').innerHTML = "New Event On: "+day+", "+monthNames[parseInt(month)- 1]
+    document.getElementById('creator_name').value = "{{ request.session.firstname }}";
+    document.getElementById('start_date').value = year + "-" + month + "-" + day
+    lastaddmonth = year + "-" + month + "-" + day
+    //console.log(document.getElementById('creator_name').value);
+    $('#addnewModal').modal('toggle');
   }
   function editEvent(eventID){
     toastr["error"]("Thanks for your interest, but this feature is cumming soon- Joydeep", "Ouch!")
@@ -165,13 +221,101 @@ Calender-Monthly View
         innerhtml += "<th>Sunday</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th><th>Saturday</th>";
     document.getElementById('calender_head').innerHTML = innerhtml;
   }
+  function rerender(){
+    //console.log("rerender callled");
+    render_month(parseInt(lastaddmonth.split("-")[0]),parseInt(lastaddmonth.split("-")[1]))
+  }
   $(window).resize(function() {
     adjheaders();
   });
   document.onreadystatechange = function () {
     if (document.readyState === "complete") {
-      render_month(2017,09)
+      render_month(2017,9)
     }
   }
+
+  $('#addnewEventForm').on('submit', function(event){
+    event.preventDefault();
+    console.log("form submitted!")  // sanity check
+    post_eventForm();
+  });
+  function post_eventForm() {
+    //console.log("Ajax Post is working!") // sanity check
+    //console.log($('#id_event_name').val())
+    toastr["info"]("Till server processes your event", "Wait")
+    $.ajax({
+        url : "{% url 'add_new_event' %}", // the endpoint
+        type : "POST", // http method
+        data:  $('#addnewEventForm').serialize(),
+
+        // handle a successful response
+        success : function(json) {
+          toastr["success"]("Your event added", "Voila")
+           $('#addnewEventForm')[0].reset();
+           $('#addnewModal').modal('toggle');
+           rerender();
+        },
+
+        // handle a non-successful response
+        error : function(xhr,errmsg,err) {
+          toastr["error"]("Your event was not added", "Error")
+        }
+    });
+  };
+
+/* Ajax Form Submission with csfr token validation */
+  $(function() {
+    // This function gets cookie with a given name
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    var csrftoken = getCookie('csrftoken');
+
+    /*
+    The functions below will create a header with csrftoken
+    */
+
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    function sameOrigin(url) {
+        // test that a given url is a same-origin URL
+        // url could be relative or scheme relative or absolute
+        var host = document.location.host; // host + port
+        var protocol = document.location.protocol;
+        var sr_origin = '//' + host;
+        var origin = protocol + sr_origin;
+        // Allow absolute or scheme relative URLs to same origin
+        return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+            (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+            // or any other URL that isn't scheme relative or absolute i.e relative.
+            !(/^(\/\/|http:|https:).*/.test(url));
+    }
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+                // Send the token to same-origin, relative URLs only.
+                // Send the token only if the method warrants CSRF protection
+                // Using the CSRFToken value acquired earlier
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+  });
 </script>
 {% endblock %}

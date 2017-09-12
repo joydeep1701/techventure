@@ -4,12 +4,29 @@ from django.http import HttpResponse,JsonResponse
 from django.utils import timezone
 import json
 from .models import CalenderEvent
+from .forms import CalenderEventForm
 # Create your views here.
 
 @login_required
 def index(request):
     #event_id = request.GET['id']
-    return render(request,'calender/index.html')
+    form = CalenderEventForm()
+    return render(request,'calender/index.html',{'form':form})
+
+def newEvent(request):
+    #form = CalenderEventForm()
+    #return render(request, 'core/signup.html', {'form':form})
+    if request.method == "POST":
+        form = CalenderEventForm(request.POST)
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.creator_name = request.session['firstname']
+            event.save()
+            return HttpResponse(json.dumps({'status':'ok'}))
+        else:
+            return HttpResponse(json.dumps({'status':'failed'}))
+    else:
+        return HttpResponse("Invalid Request")
 
 @login_required
 def events_for_month(request):
