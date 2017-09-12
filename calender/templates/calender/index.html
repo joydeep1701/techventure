@@ -6,11 +6,6 @@ Calender-Monthly View
 
 {% block main %}
 <div class="col-sm-12">
-  {% csrf_token %}
-  <form class="form" action="" method="post" id="addnew">
-    <fieldset>
-    </fieldset>
-  </form>
   <div class="row">
       <h2 id="calender_title">Calender</h2>
   </div>
@@ -126,7 +121,11 @@ Calender-Monthly View
     document.getElementById('modal_body').innerHTML = ""
     $('#message').modal('hide');
   }
-
+  function striphtmltags(variable) {
+    variable = variable.split("<").join("&lt;");
+    variable = variable.split(">").join("&gt;");
+    return variable;
+  }
 
   function render_month(year,month) {
     if(month < 10)
@@ -175,15 +174,15 @@ Calender-Monthly View
         innerhtml += "<div class=\"panel panel-default\">"
         innerhtml +=  "<a class=\"list-group-item\" data-toggle=\"collapse\" data-parent=\"#EventsAccordion\" href=\"#collapse"+i+"\">"
         //innerhtml +=    "<h4 class=\"panel-title\">"
-        innerhtml +=       ""+monthlyEvents[i].event_name+""
-        innerhtml +=       "<span class=\"badge\">"+monthlyEvents[i].event_level+"</span>"
+        innerhtml +=       ""+striphtmltags(monthlyEvents[i].event_name)+""
+        innerhtml +=       "<span class=\"badge\">"+striphtmltags(monthlyEvents[i].event_level)+"</span>"
         //innerhtml +=    "</h4>"
         innerhtml +=  "</a>"
         innerhtml +=  "<div id=\"collapse"+i+"\" class=\"panel-collapse collapse"+((incheck == 1)?" in":"")+"\">"
         innerhtml +=    "<div class=\"panel-body\">"
-        innerhtml +=    "<p><b>Time: </b>"+monthlyEvents[i].start_time+"</p>"
-        innerhtml +=    "<p><b>At: </b>"+monthlyEvents[i].location+"</p>"
-        innerhtml +=    "<p><b>Description: </b>"+monthlyEvents[i].description+"</p>"
+        innerhtml +=    "<p><b>Time: </b>"+striphtmltags(monthlyEvents[i].start_time)+"</p>"
+        innerhtml +=    "<p><b>At: </b>"+striphtmltags(monthlyEvents[i].location)+"</p>"
+        innerhtml +=    "<p><b>Description: </b>"+striphtmltags(monthlyEvents[i].description)+"</p>"
         innerhtml +=    "<p><b>Updated by: </b><span class=\"label label-info\">"+monthlyEvents[i].creator_name+"</span></p>"
         innerhtml +=    "<div class=\"modal-footer\"><button class=\"btn btn-warning\" onclick=\"editEvent('"+monthlyEvents[i].event_id+"')\">Edit</button></div>"
         innerhtml +=    "</div>"
